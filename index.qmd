@@ -14,7 +14,7 @@ library(here)
 ```
 
 
-
+# Graph 1
 ```{r}
 ar_income <- get_acs(
   geography = "tract", 
@@ -32,3 +32,43 @@ ggplot()+
                       labels = scales::dollar) +
   theme_minimal()
 ```
+
+
+
+# Graph 2
+```{r}
+metros <-  get_acs(
+  geography = "cbsa",
+  variables = "DP03_0021P",
+  summary_var = "B01003_001",
+  survey = "acs1",
+  year = 2019
+) %>%
+  slice_max(summary_est, n = 20)
+```
+
+```{r}
+metros %>%
+  mutate(NAME = str_remove(NAME, "-.*$")) %>%
+  mutate(NAME = str_remove(NAME, ",.*$")) %>%
+  ggplot(aes(y = reorder(NAME, estimate), x = estimate)) + 
+  geom_col()
+```
+
+
+
+
+
+## Quarto
+
+
+
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
