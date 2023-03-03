@@ -1,27 +1,34 @@
 ---
-title: "index"
-author: "Daniel Fang, Cloris Lee"
+title: "Assignment 4"
+author: "Daniel Fang, Cloris Li"
 format: html
 editor: visual
 ---
-
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
-1 + 1
+library(tidycensus)
+library(tidyverse)
+library(tigris)
+library(ggplot2)
+library(sf)
+library(here)
 ```
 
-You can add options to executable code like this
+
 
 ```{r}
-#| echo: false
-2 * 2
-```
+ar_income <- get_acs(
+  geography = "tract", 
+  variables = "B19013_001", 
+  state = "VA", 
+  county = "Arlington", 
+  geometry = TRUE,
+  year = 2021,
+  progress = FALSE
+)
 
-The `echo: false` option disables the printing of code (only output is displayed).
+ggplot()+
+  geom_sf(data = ar_income, aes(fill = estimate) ) +
+  scale_fill_gradient(low = "#cfe8f3" , high = "#062635",
+                      labels = scales::dollar) +
+  theme_minimal()
+```
