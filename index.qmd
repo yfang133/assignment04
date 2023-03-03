@@ -3,6 +3,8 @@ title: "Assignment 4"
 author: "Daniel Fang, Cloris Li"
 format: html
 editor: visual
+editor_options: 
+  chunk_output_type: console
 ---
 ```{r}
 library(tidycensus)
@@ -55,20 +57,35 @@ metros %>%
   geom_col()
 ```
 
-
-
-
-
-## Quarto
-
-
-
-
-You can add options to executable code like this
-
+#Graph 3
 ```{r}
-#| echo: false
-2 * 2
+housing_val <- get_acs(
+  geography = "tract",
+# median home value
+  variables = "B25077_001",
+  state = "VA",
+# only these counties
+  county = c(
+    "Arlington",
+    "Alexandria",
+    "Manassas city",
+    "Falls Church"
+  )
+)%>%
+# separate NAME column into columns for tract, county, and state
+  separate(
+  NAME,
+  into = c("tract", "county", "state"),
+  sep = ", "
+)
+
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+```{r}
+ggplot()+
+  geom_density(data = housing_val, aes(x = estimate, fill = county), alpha = 0.4) +
+  theme_minimal()
+```
+
+
+
