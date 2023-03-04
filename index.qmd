@@ -1,7 +1,9 @@
 ---
 title: "Assignment 4"
 author: "Daniel Fang, Cloris Li"
-format: html
+format: 
+  html:
+    self-contained: true
 editor: visual
 editor_options: 
   chunk_output_type: console
