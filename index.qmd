@@ -8,6 +8,7 @@ editor: visual
 editor_options: 
   chunk_output_type: console
 ---
+
 ```{r}
 library(tidycensus)
 library(tidyverse)
@@ -17,8 +18,8 @@ library(sf)
 library(here)
 ```
 
-
 # Graph 1
+
 ```{r}
 ar_income <- get_acs(
   geography = "tract", 
@@ -33,13 +34,19 @@ ar_income <- get_acs(
 ggplot()+
   geom_sf(data = ar_income, aes(fill = estimate) ) +
   scale_fill_gradient(low = "#cfe8f3" , high = "#062635",
-                      labels = scales::dollar) +
-  theme_minimal()
+                      labels = scales::dollar,
+                      name = "Median Household Income") +
+  labs(title = "Median Household Incomes Across Arlington, VA in 2021",
+       subtitle = "Highest income households are concentrated in the north",
+       caption = "Sources: American Community Survey (ACS) | Tidycensus R package") + 
+  theme_minimal() +
+  theme(text = element_text(family = "serif"))
 ```
 
-
+Graph 1 is a choropleth of the median household income estimates for Arlington, VA and shows the spatial distribution of median household incomes across the region. Each census tract is shaded based on its median household income, with darker shades representing higher incomes and lighter shades lower incomes.
 
 # Graph 2
+
 ```{r}
 metros <-  get_acs(
   geography = "cbsa",
@@ -60,6 +67,7 @@ metros %>%
 ```
 
 #Graph 3
+
 ```{r}
 housing_val <- get_acs(
   geography = "tract",
@@ -88,6 +96,3 @@ ggplot()+
   geom_density(data = housing_val, aes(x = estimate, fill = county), alpha = 0.4) +
   theme_minimal()
 ```
-
-
-
