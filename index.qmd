@@ -9,7 +9,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r}
+```{r, warnings = FALSE}
 library(tidycensus)
 library(tidyverse)
 library(tigris)
@@ -18,11 +18,50 @@ library(sf)
 library(here)
 ```
 
+# Introduction
+
+In this assignment, we explored retrieving the American Community Survey (ACS) data using our API key and made visualizations that describe demographic information of the selected regions. We intend to use these visualizations to start our analysis on the relationship between demographic characteristics and public transportation in the Washington metropolitan area. Doing visualizations on the region is a difficult challenge as it requires binding data from DC, VA and MD. Our attempt in this portfolio instead is to introduce the topic with a public transit overview, and then concentrate on analyzing Northern Virginia. Some of the visualizations are inspired by class exercises and online tutorials about ACS data analysis. 
+
 # Graph 1
 
 ```{r}
+ridership <-  get_acs(
+  geography = "cbsa",
+  #public transit commute share
+  variables = "DP03_0021P",
+  summary_var = "B01003_001",
+  survey = "acs1",
+  year = 2021
+) %>%
+  slice_max(summary_est, n = 15)
+```
+
+```{r}
+ridership %>%
+  mutate(NAME = str_remove(NAME, "-.*$")) %>%
+  mutate(NAME = str_remove(NAME, ",.*$")) %>%
+  ggplot(aes(y = reorder(NAME, estimate), x = estimate)) + 
+  geom_col(color = "#12719e",
+    fill = "#12719e") +
+  labs(title = "SHARE OF PUBLIC TRANSPORTATION COMMUTE IN MAJOR U.S.\nMETROPOLITAN AREAS IN 2021",
+       subtitle = "Washington ranks high among other major populous cities.",
+       caption = "Sources: American Community Survey (ACS) | Tidycensus R package",
+       y = "",
+       x = "% of commuters") + 
+  theme_minimal() +
+  theme(text = element_text(family = "serif"), 
+        plot.title = element_text(face="bold", size = 11.5))
+```
+
+Graph 1 is an overview of the public transportation scene in major U.S. cities. Each bar indicates the share of public transit in a certain metropolitan area's total commute. In 2021, COVID-19 severely impacted on-site work and public transit usage, but cities that are more transit-oriented traditionally still show robust ridership results. 
+
+
+# Graph 2
+
+```{r}
 ar_income <- get_acs(
-  geography = "tract", 
+  geography = "tract",
+  #median household income
   variables = "B19013_001", 
   state = "VA", 
   county = "Arlington", 
@@ -40,46 +79,29 @@ ggplot()+
        subtitle = "Highest income households are concentrated in the north",
        caption = "Sources: American Community Survey (ACS) | Tidycensus R package") + 
   theme_minimal() +
-  theme(text = element_text(family = "serif"))
+  theme(text = element_text(family = "serif"),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank())
 ```
 
-Graph 1 is a choropleth of the median household income estimates for Arlington, VA and shows the spatial distribution of median household incomes across the region. Each census tract is shaded based on its median household income, with darker shades representing higher incomes and lighter shades lower incomes.
+Graph 2 is a choropleth of the median household income estimates for Arlington, VA and shows the spatial distribution of median household incomes across the region. Each census tract is shaded based on its median household income, with darker shades representing higher incomes and lighter shades lower incomes.
 
-# Graph 2
-
-```{r}
-metros <-  get_acs(
-  geography = "cbsa",
-  variables = "DP03_0021P",
-  summary_var = "B01003_001",
-  survey = "acs1",
-  year = 2019
-) %>%
-  slice_max(summary_est, n = 20)
-```
-
-```{r}
-metros %>%
-  mutate(NAME = str_remove(NAME, "-.*$")) %>%
-  mutate(NAME = str_remove(NAME, ",.*$")) %>%
-  ggplot(aes(y = reorder(NAME, estimate), x = estimate)) + 
-  geom_col()
-```
 
 #Graph 3
 
 ```{r}
-housing_val <- get_acs(
+values <- get_acs(
   geography = "tract",
 # median home value
   variables = "B25077_001",
   state = "VA",
-# only these counties
+  year = 2021,
   county = c(
     "Arlington",
     "Alexandria",
-    "Manassas city",
-    "Falls Church"
+    "Fairfax County",
+    "Falls Church",
+    "Loudoun"
   )
 )%>%
 # separate NAME column into columns for tract, county, and state
@@ -93,6 +115,18 @@ housing_val <- get_acs(
 
 ```{r}
 ggplot()+
-  geom_density(data = housing_val, aes(x = estimate, fill = county), alpha = 0.4) +
-  theme_minimal()
+  geom_density(data = values, aes(x = estimate), alpha = 0.4, fill = "#55b748") +
+  facet_wrap(~county) +
+  theme_minimal()+
+  labs(title = "MEDIAN HOME VALUE IN NORTHER VIRGINIA COUNTIES & CITIES",
+       caption = "Sources: American Community Survey (ACS) | Tidycensus R package",
+       y = "",
+       x = "Median Home Value ($)") + 
+  theme_minimal() +
+  theme(text = element_text(family = "serif"), 
+        plot.title = element_text(face="bold", size = 11.5),
+        axis.text.y = element_blank())
 ```
+
+
+
