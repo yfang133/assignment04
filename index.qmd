@@ -5,6 +5,7 @@ format:
   html:
     self-contained: true
 warning: false
+theme: cosmo
 editor: visual
 editor_options: 
   chunk_output_type: console
