@@ -4,6 +4,7 @@ author: "Daniel Fang, Cloris Li"
 format: 
   html:
     self-contained: true
+warning: false
 editor: visual
 editor_options: 
   chunk_output_type: console
@@ -16,11 +17,12 @@ library(tigris)
 library(ggplot2)
 library(sf)
 library(here)
+library(tidyr)
 ```
 
 # Introduction
 
-In this assignment, we explored retrieving the American Community Survey (ACS) data using our API key and made visualizations that describe demographic information of the selected regions. We intend to use these visualizations to start our analysis on the relationship between demographic characteristics and public transportation in the Washington metropolitan area. Doing visualizations on the region is a difficult challenge as it requires binding data from DC, VA and MD. Our attempt in this portfolio instead is to introduce the topic with a public transit overview, and then concentrate on analyzing Northern Virginia. Some of the visualizations are inspired by class exercises and online tutorials about ACS data analysis. 
+In this assignment, we explored retrieving the American Community Survey (ACS) data using our API key and made visualizations that describe demographic information of the selected regions. We intend to use these visualizations to start our analysis on the relationship between demographic characteristics and public transportation in the Washington metropolitan area. Doing visualizations on the region is a difficult challenge as it requires binding data from DC, VA and MD. Our attempt in this portfolio instead is to introduce the topic with a public transit overview, and then concentrate on analyzing certain regions within the metropolitan area. Some of the visualizations are inspired by class exercises and online tutorials about ACS data analysis. 
 
 # Graph 1
 
@@ -115,10 +117,10 @@ values <- get_acs(
 
 ```{r}
 ggplot()+
-  geom_density(data = values, aes(x = estimate), alpha = 0.4, fill = "#55b748") +
+  geom_density(data = values, aes(x = estimate), alpha = 0.4, fill = "purple") +
   facet_wrap(~county) +
   theme_minimal()+
-  labs(title = "MEDIAN HOME VALUE IN NORTHER VIRGINIA COUNTIES & CITIES",
+  labs(title = "MEDIAN HOME VALUE IN NORTHERN VIRGINIA COUNTIES & CITIES",
        caption = "Sources: American Community Survey (ACS) | Tidycensus R package",
        y = "",
        x = "Median Home Value ($)") + 
@@ -128,5 +130,54 @@ ggplot()+
         axis.text.y = element_blank())
 ```
 
+
+This is a wrapped density plot that exhibits median home value in counties and cities in northern Virginia. 
+
+#Graph 4
+
+```{r}
+years <- 2010:2019
+names(years) <- years
+variders <- map_dfr(years, ~{
+  get_acs(
+    geography = "county",
+    variables = "DP03_0021P",
+    summary_var = "B01003_001",
+    survey = "acs1",
+    state = "VA",
+    county = c(
+    "Arlington",
+    "Alexandria",
+    "Fairfax County",
+    "Falls Church",
+    "Loudoun"
+    ),
+    year = .x
+  )
+}, .id = "year") %>%
+# separate NAME column into columns for tract, county, and state
+  separate(
+  NAME,
+  into = c("county", "state"),
+  sep = ", "
+)
+```
+
+
+
+```{r}
+ggplot(variders, aes(x = year, y = estimate, color = county, group = 4)) + 
+  geom_line(aes(group = county)) +
+  geom_point() +
+  theme_minimal()+
+  labs(title = "PUBLIC TRANSPORTATION COMMUTING IN NORTHERN VIRGINIA, 2010-2019",
+       subtitle = "Shares of commuters are low for some counties even with the presence of metro rail lines",
+       caption = "Sources: American Community Survey (ACS) | Tidycensus R package",
+       y = "% of Commuters",
+       x = "Year") + 
+  theme_minimal() +
+  theme(text = element_text(family = "serif"), 
+        plot.title = element_text(face="bold", size = 11.5))
+```
 
 
